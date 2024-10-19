@@ -1,9 +1,9 @@
 # Makefile for compiling main.cpp
 
 # Target to create the executable
-main: main.cpp
-	g++ -Wall main.cpp -o main.out
+main: Hashtable.cpp
+	g++ -Wall HashTable.cpp -o HashTable.out
 
 # Clean up generated files
 clean:
-	rm -f main.out
+	rm -f HashTable.out
