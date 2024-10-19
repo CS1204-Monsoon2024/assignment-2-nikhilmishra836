@@ -3,14 +3,11 @@
 
 class HashTable {
 private:
-    std::vector<int> table; // Hash table
-    std::vector<bool> occupied; // Tracks if a cell is occupied
-    std::vector<bool> tombstone; // Tracks if a tombstone (deleted element) is present
-    int size; // Current size of the table
-    int currentSize; // Number of actual elements in the table (excluding tombstones)
-    double upperLoadFactor; // Threshold for resizing
+    std::vector<int> table;
+    int size;
+    int currentSize;
+    double loadFactor;
 
-    // Helper function to check if a number is prime
     bool isPrime(int num) {
         if (num <= 1) return false;
         for (int i = 2; i * i <= num; i++) {
@@ -19,7 +16,6 @@ private:
         return true;
     }
 
-    // Helper function to find the next prime greater than or equal to 'num'
     int nextPrime(int num) {
         while (!isPrime(num)) {
             num++;
@@ -27,84 +23,68 @@ private:
         return num;
     }
 
-    // Hash function
     int hashFunction(int key) {
         return key % size;
     }
 
-    // Function to resize the table
     void resize() {
         int oldSize = size;
-        size = nextPrime(size * 2); // Resize to the next prime number
+        size = nextPrime(size * 2);
         std::vector<int> oldTable = table;
-        std::vector<bool> oldOccupied = occupied;
-        std::vector<bool> oldTombstone = tombstone;
 
-        // Reinitialize new table
         table = std::vector<int>(size, -1);
-        occupied = std::vector<bool>(size, false);
-        tombstone = std::vector<bool>(size, false);
         currentSize = 0;
 
-        // Rehash all elements from the old table to the new table
         for (int i = 0; i < oldSize; i++) {
-            if (oldOccupied[i] && !oldTombstone[i]) {
-                insert(oldTable[i]); // Insert valid elements into the new table
+            if (oldTable[i] != -1) {
+                insert(oldTable[i]);
             }
         }
     }
 
 public:
-    // Constructor
-    HashTable(int initialSize) : size(nextPrime(initialSize)), upperLoadFactor(0.7), currentSize(0) {
+    HashTable(int initialSize) : size(nextPrime(initialSize)), loadFactor(0.8), currentSize(0) {
         table.resize(size, -1);
-        occupied.resize(size, false);
-        tombstone.resize(size, false);
     }
 
-    // Insert function
     void insert(int key) {
-        if ((double)currentSize / size >= upperLoadFactor) {
-            resize(); // Resize if load factor exceeds the threshold
+        if ((double)currentSize / size >= loadFactor) {
+            resize();
         }
 
         int index = hashFunction(key);
-        int probing = 1; // Quadratic probing starts from 1
+        int i = 1;
 
-        while (occupied[index] && !tombstone[index]) {
+        while (table[index] != -1) {
             if (table[index] == key) {
                 std::cout << "Duplicate key insertion is not allowed\n";
-                return; // Duplicate key found
+                return;
             }
-            index = (hashFunction(key) + probing * probing) % size; // Quadratic probing
-            probing++;
-            if (probing > size) {
-                std::cout << "Max probing limit reached!\n";
+            index = (hashFunction(key) + i * i) % size;
+            i++;
+            if (i > size) {
+                std::cout << "Hash table is full\n";
                 return;
             }
         }
 
-        // Insert the key and update occupancy
         table[index] = key;
-        occupied[index] = true;
-        tombstone[index] = false; // Mark as no tombstone
         currentSize++;
     }
 
-    // Remove function
     void remove(int key) {
         int index = hashFunction(key);
-        int probing = 1;
+        int i = 1;
 
-        while (occupied[index]) {
-            if (table[index] == key && !tombstone[index]) {
-                tombstone[index] = true; // Mark as deleted
-                currentSize--; // Decrease the count of active elements
+        while (table[index] != -1) {
+            if (table[index] == key) {
+                table[index] = -1; // Mark as deleted
+                // Note: We don't decrease currentSize here
                 return;
             }
-            index = (hashFunction(key) + probing * probing) % size;
-            probing++;
-            if (probing > size) {
+            index = (hashFunction(key) + i * i) % size;
+            i++;
+            if (i > size) {
                 std::cout << "Element not found\n";
                 return;
             }
@@ -112,28 +92,26 @@ public:
         std::cout << "Element not found\n";
     }
 
-    // Search function
     int search(int key) {
         int index = hashFunction(key);
-        int probing = 1;
+        int i = 1;
 
-        while (occupied[index]) {
-            if (table[index] == key && !tombstone[index]) {
-                return index; // Key found
+        while (table[index] != -1) {
+            if (table[index] == key) {
+                return index;
             }
-            index = (hashFunction(key) + probing * probing) % size;
-            probing++;
-            if (probing > size) {
-                return -1; // Key not found
+            index = (hashFunction(key) + i * i) % size;
+            i++;
+            if (i > size) {
+                return -1;
             }
         }
-        return -1; // Key not found
+        return -1;
     }
 
-    // Print the table
     void printTable() {
         for (int i = 0; i < size; i++) {
-            if (occupied[i] && !tombstone[i]) {
+            if (table[i] != -1) {
                 std::cout << table[i] << " ";
             } else {
                 std::cout << "- ";
@@ -141,5 +119,8 @@ public:
         }
         std::cout << "\n";
     }
-};
 
+    double getCurrentLoadFactor() {
+        return (double)currentSize / size;
+    }
+};
