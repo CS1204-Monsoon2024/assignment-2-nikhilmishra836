@@ -18,8 +18,8 @@ int main() {
     ht.insert(29);  
     ht.printTable(); 
 
-    int find = ht.search(22);
-    std::cout << "Found at:" << find << std::endl;
+    bool found = ht.search(22);  // Change from int to bool
+    std::cout << "Found 22: " << (found ? "true" : "false") << std::endl; // Update output
 
     return 0;
 }
