@@ -3,12 +3,12 @@
 
 class HashTable {
 private:
-    std::vector<int> table; // Hash table
-    std::vector<bool> occupied; // Tracks if a cell is occupied
+    std::vector<int> table;      // Hash table
+    std::vector<bool> occupied;  // Tracks if a cell is occupied
     std::vector<bool> tombstone; // Tracks if a tombstone (deleted element) is present
-    int size; // Current size of the table
-    int currentSize; // Number of actual elements in the table (excluding tombstones)
-    double upperLoadFactor; // Threshold for resizing
+    int size;                    // Current size of the table
+    int currentSize;             // Number of actual elements in the table (excluding tombstones)
+    double upperLoadFactor;      // Threshold for resizing
 
     // Helper function to check if a number is prime
     bool isPrime(int num) {
@@ -69,15 +69,15 @@ public:
         }
 
         int index = hashFunction(key);
-        int probing = 1; // Quadratic probing starts from 1
+        int probing = 0; // Quadratic probing starts from 0
 
-        while (occupied[index] && !tombstone[index]) {
-            if (table[index] == key) {
+        while (occupied[index]) {
+            if (table[index] == key && !tombstone[index]) {
                 std::cout << "Duplicate key insertion is not allowed\n";
                 return; // Duplicate key found
             }
-            index = (hashFunction(key) + probing * probing) % size; // Quadratic probing
             probing++;
+            index = (hashFunction(key) + probing * probing) % size; // Quadratic probing
             if (probing > size) {
                 std::cout << "Max probing limit reached!\n";
                 return;
@@ -94,7 +94,7 @@ public:
     // Remove function
     void remove(int key) {
         int index = hashFunction(key);
-        int probing = 1;
+        int probing = 0;
 
         while (occupied[index]) {
             if (table[index] == key && !tombstone[index]) {
@@ -102,8 +102,8 @@ public:
                 currentSize--; // Decrease the count of active elements
                 return;
             }
-            index = (hashFunction(key) + probing * probing) % size;
             probing++;
+            index = (hashFunction(key) + probing * probing) % size;
             if (probing > size) {
                 std::cout << "Element not found\n";
                 return;
@@ -115,14 +115,14 @@ public:
     // Search function
     int search(int key) {
         int index = hashFunction(key);
-        int probing = 1;
+        int probing = 0;
 
         while (occupied[index]) {
             if (table[index] == key && !tombstone[index]) {
                 return index; // Key found
             }
-            index = (hashFunction(key) + probing * probing) % size;
             probing++;
+            index = (hashFunction(key) + probing * probing) % size;
             if (probing > size) {
                 return -1; // Key not found
             }
