@@ -145,24 +145,3 @@ public:
         }
     }
 };
-
-// Main function
-int main() {
-    int initialSize = 7; 
-    HashTable ht(initialSize);
-
-    // Example test case
-    ht.insert(1);
-    ht.insert(6);
-    ht.insert(15);
-    ht.insert(25);
-    ht.remove(15);
-    ht.insert(29);  
-    ht.printTable();  // Print the current state of the hash table
-
-    // Searching for a key
-    bool found = ht.search(22);
-    std::cout << "Found: " << (found ? "true" : "false") << std::endl;
-
-    return 0;
-}
