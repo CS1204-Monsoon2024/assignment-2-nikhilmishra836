@@ -30,7 +30,7 @@ private:
     vector<int> table;  // The hash table will dynamically resize
     int m;  // The size of the table
     int elements_num;  // The number of elements currently in the table
-    const double upperloadfactor = 0.8;  // Load factor threshold for resizing
+    double upperloadfactor = 0.8;  // Load factor threshold for resizing
 
     // Simple hash function
     int hashfunction(int key) {
