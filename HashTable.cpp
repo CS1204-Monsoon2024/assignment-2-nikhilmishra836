@@ -8,7 +8,7 @@ private:
     std::vector<bool> tombstone;  // Keeps track if a tombstone (deleted element) is present
     int size;  // Current size of the table
     int currentSize;  // Number of actual elements in the table (excluding tombstones)
-    double upperLoadFactor;  // Threshold for resizing (removed const)
+    double upperLoadFactor;  // Threshold for resizing
 
     // Helper function to check if a number is prime
     bool isPrime(int num) {
@@ -35,12 +35,12 @@ private:
     // Function to resize the table
     void resize() {
         int oldSize = size;
-        size = nextPrime(size * 2);  // Resizing to the next prime
+        size = nextPrime(size * 2);  // Resizing to the next prime number
         std::vector<int> oldTable = table;
         std::vector<bool> oldOccupied = occupied;
         std::vector<bool> oldTombstone = tombstone;
 
-        // Initialize new table with the updated size
+        // Reinitialize new table
         table = std::vector<int>(size, -1);
         occupied = std::vector<bool>(size, false);
         tombstone = std::vector<bool>(size, false);
