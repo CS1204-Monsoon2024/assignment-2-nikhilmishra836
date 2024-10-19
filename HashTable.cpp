@@ -65,11 +65,9 @@ public:
     // Insert a key into the hash table
     void insert(int key) {
         // Check for duplicates
-        for (int i = 0; i < m; i++) {
-            if (table[i] == key) {
-                cout << "Duplicate key insertion is not allowed" << endl;
-                return;
-            }
+        if (search(key) != -1) {
+            cout << "Duplicate key insertion is not allowed" << endl;
+            return;
         }
 
         // Resize table if load factor exceeds threshold
@@ -95,7 +93,7 @@ public:
     }
 
     // Search for a key in the hash table
-    bool search(int key) {
+    int search(int key) {
         int index = hashfunction(key); // hash the key
         int i = 0;
         int newIndex = index;
@@ -106,26 +104,22 @@ public:
             }
             i++;
             newIndex = (index + i * i) % m; // quadratic probing
+            if (i * i >= m) {
+                break; // to prevent infinite probing
+            }
         }
         return -1; // return -1 if key not found
     }
 
     // Remove a key from the hash table
     void remove(int key) {
-        int index = hashfunction(key); // hash the key
-        int i = 0;
-        int newIndex = index;
-        // Quadratic probing to find the key to remove
-        while (table[newIndex] != -1) { // while not an empty slot
-            if (table[newIndex] == key) { // if key is found
-                table[newIndex] = -2; // mark slot as deleted using tombstone (-2)
-                elements_num--; // decrement element count
-                return;
-            }
-            i++;
-            newIndex = (index + i * i) % m; // quadratic probing
+        int index = search(key); // find the index of the key
+        if (index != -1) {
+            table[index] = -2; // mark slot as deleted using tombstone (-2)
+            elements_num--; // decrement element count
+        } else {
+            cout << "Element not found" << endl; // if element is not found
         }
-        cout << "Element not found" << endl; // if element is not found
     }
 
     // Print the hash table
