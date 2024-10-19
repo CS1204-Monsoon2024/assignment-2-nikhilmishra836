@@ -1,5 +1,9 @@
-default:
-	# write command to test your files (you do not need it for your submissions)
+# Makefile for compiling main.cpp
 
+# Target to create the executable
+main: main.cpp
+	g++ -Wall main.cpp -o main.out
+
+# Clean up generated files
 clean:
-	rm *.out
+	rm -f main.out
