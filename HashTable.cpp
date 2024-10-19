@@ -131,6 +131,20 @@ public:
             newIndex = (index + i * i) % m;  // Update newIndex for probing
         }
     }
+    // Print the hash table
+    void HashTable::printTable() {
+        for (int i = 0; i < m; ++i) {
+            std::cout << i << ": ";
+            if (table[i] == -1) {
+                std::cout << "nullptr";
+            } else if (table[i] == -2) {
+                std::cout << "DELETED";
+            } else {
+                std::cout << table[i];
+            }
+            std::cout << std::endl;
+    }
+}
 };
 
 // Main function

@@ -1,4 +1,4 @@
-#include "HashTable.h"
+#include "HashTable.cpp"
 
 int main() {
     int initialSize = 7; 
