@@ -49,7 +49,7 @@ private:
         // Rehash all elements from the old table to the new table
         for (int i = 0; i < oldSize; i++) {
             if (oldOccupied[i] && !oldTombstone[i]) {
-                insert(oldTable[i]);
+                insert(oldTable[i]); // Insert valid elements into the new table
             }
         }
     }
@@ -76,7 +76,7 @@ public:
                 std::cout << "Duplicate key insertion is not allowed\n";
                 return; // Duplicate key found
             }
-            index = (hashFunction(key) + probing * probing) % size;
+            index = (hashFunction(key) + probing * probing) % size; // Quadratic probing
             probing++;
             if (probing > size) {
                 std::cout << "Max probing limit reached!\n";
