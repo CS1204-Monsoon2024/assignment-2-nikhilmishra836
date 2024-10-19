@@ -28,7 +28,7 @@ private:
     vector<int> table; // stores elements in the hash table
     int m; // size of the table
     int elements_num; // current number of elements in the table
-    const double upperloadfactor = 0.8; // threshold for resizing
+    double upperloadfactor = 0.8; // threshold for resizing
 
     // Hash function: key mod table size
     int hashfunction(int key) {
