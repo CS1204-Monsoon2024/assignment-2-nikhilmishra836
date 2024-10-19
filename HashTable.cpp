@@ -1,117 +1,127 @@
 #include <iostream>
 #include <vector>
+#include <limits>
+#include <stdexcept>
 
 class HashTable {
 private:
     std::vector<int> table;
-    int size;
-    int currentSize;
+    std::vector<bool> isOccupied;
+    size_t size;
+    size_t currentSize;
     double loadFactor;
 
-    bool isPrime(int num) {
+    bool isPrime(size_t num) {
         if (num <= 1) return false;
-        for (int i = 2; i * i <= num; i++) {
+        for (size_t i = 2; i * i <= num; i++) {
             if (num % i == 0) return false;
         }
         return true;
     }
 
-    int nextPrime(int num) {
+    size_t nextPrime(size_t num) {
         while (!isPrime(num)) {
             num++;
+            if (num == 0) throw std::overflow_error("Integer overflow in nextPrime");
         }
         return num;
     }
 
-    int hashFunction(int key) {
-        return key % size;
+    size_t hashFunction(int key) {
+        return static_cast<size_t>(std::abs(static_cast<long long>(key))) % size;
     }
 
     void resize() {
-        int oldSize = size;
+        size_t oldSize = size;
         size = nextPrime(size * 2);
-        std::vector<int> oldTable = table;
+        if (size <= oldSize) throw std::overflow_error("Integer overflow in resize");
 
-        table = std::vector<int>(size, -1);
+        std::vector<int> oldTable = std::move(table);
+        std::vector<bool> oldOccupied = std::move(isOccupied);
+
+        table = std::vector<int>(size);
+        isOccupied = std::vector<bool>(size, false);
         currentSize = 0;
 
-        for (int i = 0; i < oldSize; i++) {
-            if (oldTable[i] != -1) {
+        for (size_t i = 0; i < oldSize; i++) {
+            if (oldOccupied[i]) {
                 insert(oldTable[i]);
             }
         }
     }
 
 public:
-    HashTable(int initialSize) : size(nextPrime(initialSize)), loadFactor(0.8), currentSize(0) {
-        table.resize(size, -1);
+    HashTable(size_t initialSize) : size(nextPrime(initialSize)), loadFactor(0.8), currentSize(0) {
+        if (initialSize == 0) throw std::invalid_argument("Initial size cannot be 0");
+        table.resize(size);
+        isOccupied.resize(size, false);
     }
 
     void insert(int key) {
-        if ((double)currentSize / size >= loadFactor) {
+        if (static_cast<double>(currentSize) / size >= loadFactor) {
             resize();
         }
 
-        int index = hashFunction(key);
-        int i = 1;
+        size_t index = hashFunction(key);
+        size_t i = 0;
 
-        while (table[index] != -1) {
+        while (isOccupied[index]) {
             if (table[index] == key) {
                 std::cout << "Duplicate key insertion is not allowed\n";
                 return;
             }
-            index = (hashFunction(key) + i * i) % size;
             i++;
-            if (i > size) {
-                std::cout << "Hash table is full\n";
-                return;
+            if (i >= size) {
+                throw std::runtime_error("Hash table is full");
             }
+            index = (hashFunction(key) + i * i) % size;
         }
 
         table[index] = key;
+        isOccupied[index] = true;
         currentSize++;
     }
 
     void remove(int key) {
-        int index = hashFunction(key);
-        int i = 1;
+        size_t index = hashFunction(key);
+        size_t i = 0;
 
-        while (table[index] != -1) {
+        while (isOccupied[index]) {
             if (table[index] == key) {
-                table[index] = -1; // Mark as deleted
+                isOccupied[index] = false;
                 // Note: We don't decrease currentSize here
                 return;
             }
-            index = (hashFunction(key) + i * i) % size;
             i++;
-            if (i > size) {
+            if (i >= size) {
                 std::cout << "Element not found\n";
                 return;
             }
+            index = (hashFunction(key) + i * i) % size;
         }
         std::cout << "Element not found\n";
     }
 
-    int search(int key) {
-        int index = hashFunction(key);
-        int i = 1;
+    bool search(int key) {
+        size_t index = hashFunction(key);
+        size_t i = 0;
 
-        while (table[index] != -1) {
-            if (table[index] == key) {
-                return index;
+        while (isOccupied[index] || i < size) {
+            if (isOccupied[index] && table[index] == key) {
+                return true;
+            }
+            i++;
+            if (i >= size) {
+                return false;
             }
             index = (hashFunction(key) + i * i) % size;
-            i++;
-            if (i > size) {
-                return -1;
-            }
         }
-        return -1;
+        return false;
     }
 
     void printTable() {
-        for (int i = 0; i < size; i++) {
-            if (table[i] != -1) {
+        for (size_t i = 0; i < size; i++) {
+            if (isOccupied[i]) {
                 std::cout << table[i] << " ";
             } else {
                 std::cout << "- ";
@@ -121,6 +131,6 @@ public:
     }
 
     double getCurrentLoadFactor() {
-        return (double)currentSize / size;
+        return static_cast<double>(currentSize) / size;
     }
 };
