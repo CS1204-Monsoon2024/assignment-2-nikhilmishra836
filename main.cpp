@@ -100,7 +100,7 @@ public:
     // Searching for a key 
     bool search(int key) {
         int index = hashFunction(key);
-        int i = 0;
+        int i = 0;clea
         int newIndex = index;
 
         // Probing for later searches 
