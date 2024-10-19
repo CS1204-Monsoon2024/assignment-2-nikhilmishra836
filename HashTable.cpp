@@ -6,22 +6,20 @@ using namespace std;
 
 // Prime number checking function
 bool isPrime(int num) {
-    if (num < 2) return false;  // Edge cases: numbers less than 2 are not prime
+    if (num < 2) return false;
 
-    // Handle small prime numbers directly
     if (num == 2 || num == 3) return true;
-    if (num % 2 == 0 || num % 3 == 0) return false;  // Not prime if divisible by 2 or 3
+    if (num % 2 == 0 || num % 3 == 0) return false;
 
-    // Check divisibility by numbers greater than 3
-    for (int i = 5; i * i <= num; i += 6) {  // Only check up to square root of num
+    for (int i = 5; i * i <= num; i += 6) {
         if (num % i == 0 || num % (i + 2) == 0) return false;
     }
-    return true;  // It's prime
+    return true;
 }
 
 // Function to find the next prime number greater than a given number
 int nextPrimefinder(int num) {
-    while (!isPrime(num)) {  // Increment num until a prime is found
+    while (!isPrime(num)) {
         num++;
     }
     return num;
@@ -131,8 +129,9 @@ public:
             newIndex = (index + i * i) % m;  // Update newIndex for probing
         }
     }
+
     // Print the hash table
-    void HashTable::printTable() {
+    void printTable() {  // Corrected: no need to specify HashTable:: here
         for (int i = 0; i < m; ++i) {
             std::cout << i << ": ";
             if (table[i] == -1) {
@@ -143,8 +142,8 @@ public:
                 std::cout << table[i];
             }
             std::cout << std::endl;
+        }
     }
-}
 };
 
 // Main function
@@ -159,6 +158,7 @@ int main() {
     ht.insert(25);
     ht.remove(15);
     ht.insert(29);  
+    ht.printTable();  // Print the current state of the hash table
 
     // Searching for a key
     bool found = ht.search(22);
