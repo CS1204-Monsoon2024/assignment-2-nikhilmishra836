@@ -7,10 +7,8 @@ using namespace std;
 // Prime number checking function
 bool isPrime(int num) {
     if (num < 2) return false;
-
     if (num == 2 || num == 3) return true;
     if (num % 2 == 0 || num % 3 == 0) return false;
-
     for (int i = 5; i * i <= num; i += 6) {
         if (num % i == 0 || num % (i + 2) == 0) return false;
     }
@@ -27,121 +25,118 @@ int nextPrimefinder(int num) {
 
 class HashTable {
 private:
-    vector<int> table;  // The hash table will dynamically resize
-    int m;  // The size of the table
-    int elements_num;  // The number of elements currently in the table
-    double upperloadfactor = 0.8;  // Load factor threshold for resizing
+    vector<int> table; // stores elements in the hash table
+    int m; // size of the table
+    int elements_num; // current number of elements in the table
+    const double upperloadfactor = 0.8; // threshold for resizing
 
-    // Simple hash function
+    // Hash function: key mod table size
     int hashfunction(int key) {
         return key % m;
     }
 
-    // Function to resize the table when the load factor exceeds the threshold
+    // Resize the hash table when load factor exceeds threshold
     void resizingtable() {
-        int oldsize = m;
-        m = nextPrimefinder(2 * oldsize);  // Find the next prime number after doubling the size
-
-        vector<int> newtable(m, -1);  // Create a new table with the new size, initialized to -1
-
-        // Rehash the old elements into the new table
+        int oldsize = m; // current size of table
+        m = nextPrimefinder(2 * oldsize); // find next prime number larger than double the current size
+        vector<int> newtable(m, -1); // initialize new table with new size filled with -1
         for (int i = 0; i < oldsize; i++) {
-            if (table[i] != -1) {  // If the slot is not empty, rehash the element
-                int newIndex = hashfunction(table[i]);
+            if (table[i] != -1 && table[i] != -2) { // if the current table position contains a valid element
+                int newIndex = hashfunction(table[i]); // rehash element into new table
                 int j = 0;
-
-                // Quadratic probing to resolve collisions
-                while (newtable[newIndex] != -1) {  // While the element in the new slot is not empty
-                    j++;  // Probe value changes
+                while (newtable[newIndex] != -1) { // quadratic probing to find next empty spot
+                    j++;
                     newIndex = (newIndex + j * j) % m;
                 }
-                newtable[newIndex] = table[i];  // Insert the element in the new slot
+                newtable[newIndex] = table[i]; // place the rehashed element into the new table
             }
         }
-        table = newtable;  // Replace the old table with the resized table
+        table = newtable; // replace old table with the resized table
     }
 
 public:
-    // Constructor
+    // Constructor: Initialize table with a prime size
     HashTable(int size) {
-        if (isPrime(size)) {
-            m = size;  // This is the size of the table
-        } else {
-            m = nextPrimefinder(size);  // If not prime, find the next prime number
-        }
-        table.resize(m, -1);  // Resize it to size m, with each element initialized to -1
-        elements_num = 0;  // Initially empty
+        m = isPrime(size) ? size : nextPrimefinder(size); // check if initial size is prime
+        table.resize(m, -1); // initialize table with -1 (empty slots)
+        elements_num = 0; // start with 0 elements
     }
 
-    // Inserting a key into the hash table
+    // Insert a key into the hash table
     void insert(int key) {
-        // Check if the table needs to be resized
+        // Check for duplicates
+        for (int i = 0; i < m; i++) {
+            if (table[i] == key) {
+                cout << "Duplicate key insertion is not allowed" << endl;
+                return;
+            }
+        }
+
+        // Resize table if load factor exceeds threshold
         if ((double)elements_num / m > upperloadfactor) {
-            resizingtable();  // Resize the hashtable
+            resizingtable();
         }
 
-        // Finding the hash index for the key 
-        int index = hashfunction(key);
-        int i = 0;  // Counter for quadratic probing
-        int newIndex = index;  // Initialize newIndex
-
-        // Quadratic probing to find empty slot 
-        while (table[newIndex] != -1 && table[newIndex] != -2) {  // While the new index is not empty and not a tombstone
-            i++; 
-            newIndex = (index + i * i) % m;  // Quadratic probing to find next slot if full
+        int index = hashfunction(key); // hash the key
+        int i = 0;
+        int newIndex = index;
+        // Use quadratic probing to resolve collisions
+        while (table[newIndex] != -1 && table[newIndex] != -2) { // while not an empty spot
+            i++;
+            if (i * i >= m) { // if maximum probing limit reached
+                cout << "Max probing limit reached!" << endl;
+                return;
+            }
+            newIndex = (index + i * i) % m; // quadratic probing
         }
 
-        table[newIndex] = key;  // Inserting key
-        elements_num++;  // Increment number of elements
+        table[newIndex] = key; // insert the key at the calculated position
+        elements_num++; // increment element count
     }
 
-    // Searching for a key 
+    // Search for a key in the hash table
     bool search(int key) {
-        int index = hashfunction(key);
-        int i = 0;  // Quadratic probing counter
-        int newIndex = index;  // Initialize newIndex
-
-        // Probing for the key
-        while (table[newIndex] != -1) {  // If the current index is not empty
-            if (table[newIndex] == key) {  // Compare the key in the current slot with the key to find
-                return true;  // Return true if found
+        int index = hashfunction(key); // hash the key
+        int i = 0;
+        int newIndex = index;
+        // Quadratic probing to find the element
+        while (table[newIndex] != -1) { // continue searching until an empty slot is encountered
+            if (table[newIndex] == key) { // if key is found
+                return newIndex; // return the index
             }
-            i++;  // Increment probe counter
-            newIndex = (index + i * i) % m;  // Update newIndex for probing
+            i++;
+            newIndex = (index + i * i) % m; // quadratic probing
         }
-        return false;  // Return false if not found
+        return -1; // return -1 if key not found
     }
 
-    // Removing a key
+    // Remove a key from the hash table
     void remove(int key) {
-        int index = hashfunction(key);
-        int i = 0;  // Quadratic probing counter
-        int newIndex = index;  // Initialize newIndex
-
-        // Doing the probing
-        while (table[newIndex] != -1) {
-            if (table[newIndex] == key) {  // If the key is found
-                table[newIndex] = -2;  // Mark as deleted (tombstone)
-                elements_num--;  // Decrement number of elements
-                return;  // Exit after deletion
+        int index = hashfunction(key); // hash the key
+        int i = 0;
+        int newIndex = index;
+        // Quadratic probing to find the key to remove
+        while (table[newIndex] != -1) { // while not an empty slot
+            if (table[newIndex] == key) { // if key is found
+                table[newIndex] = -2; // mark slot as deleted using tombstone (-2)
+                elements_num--; // decrement element count
+                return;
             }
-            i++;  // Increment probe counter
-            newIndex = (index + i * i) % m;  // Update newIndex for probing
+            i++;
+            newIndex = (index + i * i) % m; // quadratic probing
         }
+        cout << "Element not found" << endl; // if element is not found
     }
 
     // Print the hash table
-    void printTable() {  // Corrected: no need to specify HashTable:: here
+    void printTable() {
         for (int i = 0; i < m; ++i) {
-            std::cout << i << ": ";
-            if (table[i] == -1) {
-                std::cout << "nullptr";
-            } else if (table[i] == -2) {
-                std::cout << "DELETED";
+            if (table[i] == -1 || table[i] == -2) { // if slot is empty or deleted
+                cout << "- ";
             } else {
-                std::cout << table[i];
+                cout << table[i] << " "; // print the key at the position
             }
-            std::cout << std::endl;
         }
+        cout << endl;
     }
 };
