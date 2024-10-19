@@ -3,12 +3,12 @@
 
 class HashTable {
 private:
-    std::vector<int> table;  // Hash table
-    std::vector<bool> occupied;  // Keeps track if a cell is occupied
-    std::vector<bool> tombstone;  // Keeps track if a tombstone (deleted element) is present
-    int size;  // Current size of the table
-    int currentSize;  // Number of actual elements in the table (excluding tombstones)
-    double upperLoadFactor;  // Threshold for resizing
+    std::vector<int> table; // Hash table
+    std::vector<bool> occupied; // Tracks if a cell is occupied
+    std::vector<bool> tombstone; // Tracks if a tombstone (deleted element) is present
+    int size; // Current size of the table
+    int currentSize; // Number of actual elements in the table (excluding tombstones)
+    double upperLoadFactor; // Threshold for resizing
 
     // Helper function to check if a number is prime
     bool isPrime(int num) {
@@ -35,7 +35,7 @@ private:
     // Function to resize the table
     void resize() {
         int oldSize = size;
-        size = nextPrime(size * 2);  // Resizing to the next prime number
+        size = nextPrime(size * 2); // Resize to the next prime number
         std::vector<int> oldTable = table;
         std::vector<bool> oldOccupied = occupied;
         std::vector<bool> oldTombstone = tombstone;
@@ -65,16 +65,16 @@ public:
     // Insert function
     void insert(int key) {
         if ((double)currentSize / size >= upperLoadFactor) {
-            resize();  // Resize if load factor exceeds the threshold
+            resize(); // Resize if load factor exceeds the threshold
         }
 
         int index = hashFunction(key);
-        int probing = 1;  // Quadratic probing starts from 1
+        int probing = 1; // Quadratic probing starts from 1
 
         while (occupied[index] && !tombstone[index]) {
             if (table[index] == key) {
                 std::cout << "Duplicate key insertion is not allowed\n";
-                return;  // Duplicate key found
+                return; // Duplicate key found
             }
             index = (hashFunction(key) + probing * probing) % size;
             probing++;
@@ -87,7 +87,7 @@ public:
         // Insert the key and update occupancy
         table[index] = key;
         occupied[index] = true;
-        tombstone[index] = false;  // Mark as no tombstone
+        tombstone[index] = false; // Mark as no tombstone
         currentSize++;
     }
 
@@ -98,8 +98,8 @@ public:
 
         while (occupied[index]) {
             if (table[index] == key && !tombstone[index]) {
-                tombstone[index] = true;  // Mark as deleted
-                currentSize--;  // Decrease the count of active elements
+                tombstone[index] = true; // Mark as deleted
+                currentSize--; // Decrease the count of active elements
                 return;
             }
             index = (hashFunction(key) + probing * probing) % size;
@@ -119,15 +119,15 @@ public:
 
         while (occupied[index]) {
             if (table[index] == key && !tombstone[index]) {
-                return index;  // Key found
+                return index; // Key found
             }
             index = (hashFunction(key) + probing * probing) % size;
             probing++;
             if (probing > size) {
-                return -1;
+                return -1; // Key not found
             }
         }
-        return -1;  // Key not found
+        return -1; // Key not found
     }
 
     // Print the table
